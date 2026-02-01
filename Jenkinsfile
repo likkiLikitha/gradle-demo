@@ -10,21 +10,15 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                bat 'gradle clean test jacocoTestReport'
+                bat 'gradlew clean test jacocoTestReport'
             }
         }
     }
 
     post {
         always {
-            publishHTML([
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'build/reports/jacoco/test/html',
-                reportFiles: 'index.html',
-                reportName: 'JaCoCo Code Coverage'
-            ])
+            archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
+            junit 'build/test-results/test/*.xml'
         }
     }
 }
