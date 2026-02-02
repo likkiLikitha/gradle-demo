@@ -1,24 +1,40 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK17'
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build & Test') {
+        stage('Build') {
             steps {
-                bat 'gradlew clean test jacocoTestReport'
+                sh './gradlew clean build'
             }
         }
-    }
 
-    post {
-        always {
-            archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
-            junit 'build/test-results/test/*.xml'
+        stage('Test') {
+            steps {
+                sh './gradlew test jacocoTestReport'
+            }
+        }
+        node {
+  stage('SCM') {
+    checkout scm
+  }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh './gradlew sonar'
+                }
+            }
         }
     }
 }
