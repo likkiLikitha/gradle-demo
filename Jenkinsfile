@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JDK17'
+        jdk 'JDK'
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/likkiLikitha/gradle-demo.git'
             }
         }
 
@@ -21,18 +21,19 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh './gradlew test jacocoTestReport'
+                sh './gradlew test'
             }
         }
-        node {
-  stage('SCM') {
-    checkout scm
-  }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh './gradlew sonar'
+                    sh '''
+                    ./gradlew sonarqube \
+                    -Dsonar.projectKey=gradle-demo \
+                    -Dsonar.projectName=gradle-demo \
+                    -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+                    '''
                 }
             }
         }
